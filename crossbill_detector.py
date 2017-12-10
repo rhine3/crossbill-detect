@@ -1,4 +1,4 @@
-from old_bird_detector_redux_1_1 import ThrushDetector, TseepDetector
+from old_bird_detector_redux_1_1 import CrossbillDetector
 from audio_file_utils import read_wave_file, write_wave_file
 from bunch import Bunch
 from os import path, makedirs
