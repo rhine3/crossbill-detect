@@ -32,8 +32,9 @@ def detections_to_files(samples, detections, sample_rate):
 		(start, length) = detection
 		
 		filename = "detections/clip{}.wav".format(start)
-		
-		clip = samples[0][start:start+length]
+		print(samples[0][start:start+length])
+		print(samples[1][start:start+length])
+		clip = numpy.array([samples[0][start:start+length], samples[1][start:start+length]], numpy.int32)
 		
 		# warning: will overwrite any clips that already exist
 		write_wave_file(filename, clip, sample_rate)

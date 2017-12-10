@@ -248,12 +248,13 @@ class _Detector:
     
     def detect(self, samples):
 		# test script to fix problems with array dimension error in assignment to augmented_samples
-       
+        '''
         print(self._recent_samples)
         print(samples)
         if (samples[0].any() == samples[1].any()):
             print("Same")
-
+        '''
+		
         augmented_samples = samples #np.concatenate((self._recent_samples, samples))
         
         if len(augmented_samples) <= self._signal_processor.latency:
