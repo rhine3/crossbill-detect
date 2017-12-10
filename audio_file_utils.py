@@ -1,8 +1,10 @@
-"""
+'''
+From Harold Mill's Vesper project: https://github.com/HaroldMills/Vesper/blob/master/vesper/util/bunch.py
+
 Functions pertaining to audio files.
 
 For the time being, only .wav files are supported.
-"""
+'''
 
 
 import numpy as np
