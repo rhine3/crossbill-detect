@@ -23,16 +23,19 @@ def detections_to_files(samples, detections, sample_rate):
 	- sample_rate: integer sample rate
 	'''
 	
-	# make a "detections" path
+	# make a "detections/" folder if it doesn't already exist
 	if not path.exists('detections'):
 		makedirs('detections')
 	
+	# write clips to "detections/"
 	for detection in detections:
 		(start, length) = detection
 		
 		filename = "detections/clip{}.wav".format(start)
 		
 		clip = samples[0][start:start+length]
+		
+		# warning: will overwrite any clips that already exist
 		write_wave_file(filename, clip, sample_rate)
 		print("{} saved".format(clip))
 		
