@@ -44,7 +44,7 @@ _TSEEP_SETTINGS = Bunch(
     ratio_threshold=2,                  # dimensionless
     min_duration=.100,                  # seconds
     max_duration=.400,                  # seconds
-    initial_padding=0, #3000 / _OLD_FS,     # seconds
+    initial_padding=0, #RECR: modification. Was 3000 / _OLD_FS,     # seconds
     suppressor_count_threshold=15,      # clips
     suppressor_period=20                # seconds
 )
@@ -247,7 +247,7 @@ class _Detector:
     
     
     def detect(self, samples):
-		# test script to fix problems with array dimension error in assignment to augmented_samples
+		# RECR: test script to fix problems with array dimension error in assignment to augmented_samples
         '''
         print(self._recent_samples)
         print(samples)
@@ -255,6 +255,7 @@ class _Detector:
             print("Same")
         '''
 		
+		# RECR: modified from original old_bird_detector_redux_1_1
         augmented_samples = samples #np.concatenate((self._recent_samples, samples))
         
         if len(augmented_samples) <= self._signal_processor.latency:
