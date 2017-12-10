@@ -1,6 +1,8 @@
 '''
 Modified from Harold Mill's reimplementation: https://github.com/HaroldMills/Vesper/blob/master/vesper/old_bird/old_bird_detector_redux_1_1.py
 
+All modifications are indicated with comments prepended by "RECR."
+
 Module containing reimplementations of Old Bird Tseep and Thrush detectors.
 
 The original detectors were implemented in the late 1990's by Steve Mitchell
@@ -44,7 +46,7 @@ _TSEEP_SETTINGS = Bunch(
     ratio_threshold=2,                  # dimensionless
     min_duration=.100,                  # seconds
     max_duration=.400,                  # seconds
-    initial_padding=0, #RECR: modification. Was 3000 / _OLD_FS,     # seconds
+    initial_padding=3000 / _OLD_FS,     # seconds
     suppressor_count_threshold=15,      # clips
     suppressor_period=20                # seconds
 )
@@ -52,7 +54,7 @@ _TSEEP_SETTINGS = Bunch(
 
 _THRUSH_SETTINGS = Bunch(
     filter_f0=2800,                     # hertz
-    filter_f1=5000,                     # hertz
+    filter_f1=5000,                     # hertz                    
     filter_bw=100,                      # hertz
     filter_duration=100 / _OLD_FS,      # seconds
     integration_time=4000 / _OLD_FS,    # seconds
@@ -60,7 +62,23 @@ _THRUSH_SETTINGS = Bunch(
     ratio_threshold=1.3,                # dimensionless
     min_duration=.100,                  # seconds
     max_duration=.400,                  # seconds
-    initial_padding=0, #5000 / _OLD_FS,     # seconds
+    initial_padding=5000 / _OLD_FS,     # seconds
+    suppressor_count_threshold=10,      # clips
+    suppressor_period=20                # seconds
+)
+
+# RECR: New settings optimized for crossbills
+_CROSSBILL_SETTINGS = Bunch(
+    filter_f0=2000, 					# hertz #RECR modification
+    filter_f1=2300,                     # hertz #RECR modification
+    filter_bw=100,                      # hertz
+    filter_duration=100 / _OLD_FS,      # seconds
+    integration_time=4000 / _OLD_FS,    # seconds
+    ratio_delay=.02,                    # seconds
+    ratio_threshold=1.3,                # dimensionless
+    min_duration=.100,                  # seconds
+    max_duration=.400,                  # seconds
+    initial_padding=0, 				    # seconds #RECR modification
     suppressor_count_threshold=10,      # clips
     suppressor_period=20                # seconds
 )
@@ -256,7 +274,7 @@ class _Detector:
         '''
 		
 		# RECR: modified from original old_bird_detector_redux_1_1
-        augmented_samples = samples #np.concatenate((self._recent_samples, samples))
+        augmented_samples = samples #was: np.concatenate((self._recent_samples, samples))
         
         if len(augmented_samples) <= self._signal_processor.latency:
             # don't yet have enough samples to fill processing pipeline
@@ -785,6 +803,16 @@ class ThrushDetector(_Detector):
     
     def __init__(self, sample_rate, listener):
         super().__init__(_THRUSH_SETTINGS, sample_rate, listener)
+        
+        
+class CrossbillDetector(_Detector):
+    
+    
+    extension_name = 'Old Bird Thrush Detector Redux 1.1'
+    
+    
+    def __init__(self, sample_rate, listener):
+        super().__init__(_CROSSBILL_SETTINGS, sample_rate, listener)
         
         
 def _firls(numtaps, bands, desired):
