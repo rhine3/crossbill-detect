@@ -1,8 +1,9 @@
-"""
+'''
+Copied from Harold Mill's Vesper project: https://github.com/HaroldMills/Vesper/blob/master/vesper/util/bunch.py
+
 Module containing class `Bunch`.
 
-This module was copied from the Vesper distribution.
-"""
+'''
 
 
 class Bunch:

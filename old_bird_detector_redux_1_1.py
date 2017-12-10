@@ -1,4 +1,6 @@
-"""
+'''
+Modified from Harold Mill's reimplementation: https://github.com/HaroldMills/Vesper/blob/master/vesper/old_bird/old_bird_detector_redux_1_1.py
+
 Module containing reimplementations of Old Bird Tseep and Thrush detectors.
 
 The original detectors were implemented in the late 1990's by Steve Mitchell
@@ -10,7 +12,7 @@ reimplementations are writen in Python and make use of NumPy and SciPy.
 The original detectors ran only on Windows, could process only input
 sampled at 22050 hertz, and could process only one file at a time on a
 given computer.  The reimplementations remove all of these restrictions.
-"""
+'''
 
 
 import math

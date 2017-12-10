@@ -1,5 +1,5 @@
 '''
-From Harold Mill's Vesper project: https://github.com/HaroldMills/Vesper/blob/master/vesper/util/bunch.py
+Copied from Harold Mill's Vesper project: https://github.com/HaroldMills/Vesper/blob/master/vesper/util/audio_file_utils.py
 
 Functions pertaining to audio files.
 
