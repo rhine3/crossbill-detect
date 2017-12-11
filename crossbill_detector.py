@@ -31,19 +31,20 @@ def detections_to_files(samples, detections, sample_rate):
 	for detection in detections:
 		(start, length) = detection
 		
-		filename = "detections/clip{}.wav".format(start)
+		# create filename referring to clip start in milliseconds
+		start_sec = int(1000 * start/sample_rate)
+		filename = "detections/clip{}.wav".format(start_sec)
 		
 		# create 2D numpy array of detections
 		clip = numpy.array([samples[0][start:start+length], samples[1][start:start+length]], numpy.int32)
 		
 		# warning: will overwrite any clips that already exist
 		write_wave_file(filename, clip, sample_rate)
-		print("{} saved".format(clip))
+		print("{} saved".format(filename))
 		
 def main():
 	# read sample file within directory
 	(samples, sample_rate) = read_wave_file("sample.wav")
-	print(samples)
 	
 	listener = _Listener()
 	
