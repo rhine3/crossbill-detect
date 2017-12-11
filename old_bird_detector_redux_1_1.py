@@ -76,13 +76,15 @@ _CROSSBILL_SETTINGS = Bunch(
     integration_time=4000 / _OLD_FS,    # seconds
     ratio_delay=.02,                    # seconds
     ratio_threshold=1.3,                # dimensionless
-    min_duration=.100,                  # seconds
-    max_duration=.400,                  # seconds
-    initial_padding=0, 				    # seconds #RECR modification
+    min_duration=.030,                  # seconds #RECR modification
+    max_duration=.050,                  # seconds #RECR modification
+    initial_padding=1000 / _OLD_FS, 	# seconds #RECR modification
     suppressor_count_threshold=10,      # clips
     suppressor_period=20                # seconds
 )
 
+#initial padding too small: beginning of calls tacked onto end of recordings, recordings start right after begin of calls
+#initial padding too large: multiple calls per recording
 
 # import datetime
 # 
@@ -241,7 +243,8 @@ class _Detector:
             _TransientFinder(min_length, max_length),
             _ClipExtender(initial_padding),
             _ClipMerger(),
-            _ClipSuppressor(s.suppressor_count_threshold, suppressor_period),
+			# RECR: remove suppression feature to allow for many detections per period
+            #_ClipSuppressor(s.suppressor_count_threshold, suppressor_period),
             _ClipTruncator(),
             _ClipShifter(-initial_padding)
         ]
