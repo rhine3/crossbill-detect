@@ -12,6 +12,27 @@ class _Listener:
     def process_clip(self, start_index, length):
         self.clips.append((start_index, length))
 
+def average_length(detections, sample_rate):
+	# compute average length in number of samples--only non-outliers (<0.05)
+	num_detections = 0
+	sample_total = 0
+	
+	# calculate upper limit of number of samples--higher than 0.15 sec implies detection outlier
+	upper_limit = 0.15 * sample_rate
+	print(upper_limit)
+	
+	for detection in detections:
+		detection_length = detection[1]
+		print(detection_length)
+		if detection_length < upper_limit:
+			print("hello!")
+			num_detections += 1
+			sample_total += detection_length
+	
+	avg_samples = sample_total / num_detections
+	print(avg_samples)
+	print(avg_samples*sample_rate)
+		
 def detections_to_files(samples, detections, sample_rate):
 	'''
 	Uses write_wave_file() from Vesper's audio_file_utils to write audio files given 
@@ -31,7 +52,12 @@ def detections_to_files(samples, detections, sample_rate):
 	for detection in detections:
 		(start, length) = detection
 		
-		# create filename referring to clip start in milliseconds
+		# skip detection if long detection--I have no idea why all the detections are 4205 samples long
+		if length != 4205:
+			print(length)
+			continue
+		
+		# create filename indicating clip start in milliseconds
 		start_sec = int(1000 * start/sample_rate)
 		filename = "detections/clip{}.wav".format(start_sec)
 		
@@ -44,6 +70,7 @@ def detections_to_files(samples, detections, sample_rate):
 		
 def main():
 	# read sample file within directory
+	# PUT FILENAME HERE
 	(samples, sample_rate) = read_wave_file("sample.wav")
 	
 	listener = _Listener()
@@ -59,6 +86,7 @@ def main():
 	detector.detect(sample)
 	detector.complete_detection()
 
+	#average_length(listener.clips, sample_rate)
 	
 	detections_to_files(samples, listener.clips, sample_rate)
 
