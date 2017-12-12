@@ -67,9 +67,10 @@ _THRUSH_SETTINGS = Bunch(
     suppressor_period=20                # seconds
 )
 
-# RECR: New settings optimized for crossbills
-_CROSSBILL_SETTINGS = Bunch(
-    filter_f0=2000, 					# hertz #RECR modification
+# RECR: New settings optimized for crossbill call types
+# See http://ebird.org/content/ebird/news/crossbills-of-north-america-species-and-red-crossbill-call-types/ for more info on types
+_CROSSBILL_SETTINGS_6 = Bunch(
+    filter_f0=2000,                     # hertz #RECR modification
     filter_f1=2300,                     # hertz #RECR modification
     filter_bw=100,                      # hertz
     filter_duration=100 / _OLD_FS,      # seconds
@@ -78,7 +79,22 @@ _CROSSBILL_SETTINGS = Bunch(
     ratio_threshold=1.3,                # dimensionless
     min_duration=.030,                  # seconds #RECR modification
     max_duration=.050,                  # seconds #RECR modification
-    initial_padding=1000 / _OLD_FS, 	# seconds #RECR modification
+    initial_padding=1000 / _OLD_FS,     # seconds #RECR modification
+    suppressor_count_threshold=10,      # clips
+    suppressor_period=20                # seconds
+)
+
+_CROSSBILL_SETTINGS_2 = Bunch(
+    filter_f0=2100,                     # hertz #RECR modification
+    filter_f1=4000,                     # hertz #RECR modification
+    filter_bw=100,                      # hertz
+    filter_duration=100 / _OLD_FS,      # seconds
+    integration_time=4000 / _OLD_FS,    # seconds
+    ratio_delay=.02,                    # seconds
+    ratio_threshold=1.3,                # dimensionless
+    min_duration=.030,                  # seconds #RECR modification
+    max_duration=.050,                  # seconds #RECR modification
+    initial_padding=1000 / _OLD_FS,     # seconds #RECR modification
     suppressor_count_threshold=10,      # clips
     suppressor_period=20                # seconds
 )
@@ -242,8 +258,8 @@ class _Detector:
         processors = [
             _TransientFinder(min_length, max_length),
             _ClipExtender(initial_padding),
-            _ClipMerger(),
-			# RECR: remove suppression feature to allow for many detections per period
+            # RECR: remove suppression feature to allow for many detections per period
+            #_ClipMerger(),
             #_ClipSuppressor(s.suppressor_count_threshold, suppressor_period),
             _ClipTruncator(),
             _ClipShifter(-initial_padding)
@@ -268,15 +284,15 @@ class _Detector:
     
     
     def detect(self, samples):
-		# RECR: test script to fix problems with array dimension error in assignment to augmented_samples
+        # RECR: test script to fix problems with array dimension error in assignment to augmented_samples
         '''
         print(self._recent_samples)
         print(samples)
         if (samples[0].any() == samples[1].any()):
             print("Same")
         '''
-		
-		# RECR: modified from original old_bird_detector_redux_1_1
+        
+        # RECR: modified from original old_bird_detector_redux_1_1
         augmented_samples = samples #was: np.concatenate((self._recent_samples, samples))
         
         if len(augmented_samples) <= self._signal_processor.latency:
@@ -807,15 +823,21 @@ class ThrushDetector(_Detector):
     def __init__(self, sample_rate, listener):
         super().__init__(_THRUSH_SETTINGS, sample_rate, listener)
         
-        
+
+# RECR: New class for detecting crossbills
 class CrossbillDetector(_Detector):
     
+    extension_name = 'Crossbill Detector'
     
-    extension_name = 'Old Bird Thrush Detector Redux 1.1'
+    def __init__(self, sample_rate, listener, type):
+    # Different settings for different types?
+        settings_dict = {
+            2: _CROSSBILL_SETTINGS_2,
+            6: _CROSSBILL_SETTINGS_6,
+            }
     
-    
-    def __init__(self, sample_rate, listener):
-        super().__init__(_CROSSBILL_SETTINGS, sample_rate, listener)
+        settings = settings_dict[type]
+        super().__init__(settings, sample_rate, listener)
         
         
 def _firls(numtaps, bands, desired):
