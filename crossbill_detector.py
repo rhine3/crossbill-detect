@@ -103,6 +103,13 @@ def input():
 
     
 def channel_counter(samples, filename):
+    '''
+    Returns a single subarray from `samples`, a two-dimensional array of channels of sound
+    read from a .wav file.
+    
+    Prints different messages depending on how many subarrays are present, and 
+    whether the subarrays are identical.
+    '''
     if len(samples) > 1:
         if len(samples) == 2: 
             if samples[0].all() == samples[1].all():
@@ -114,15 +121,16 @@ def channel_counter(samples, filename):
         print("Processing first channel.")
         return samples[0]
     elif len(samples) == 1:
-        print("Read file {} contains one channel.".format(filename))
-        return samples
+        print("Processing single channel in file {}.".format(filename))
+        return samples[0]
     else:
         return []
     
 def main():
     # read sample file within directory
     # PUT FILENAME HERE
-    file_path = "Type 2_66622211_flock_16bit.wav"
+    file_path = "sample.wav"
+    #file_path = "Type 2_66622211_flock_16bit.wav"
     (samples, sample_rate) = read_wave_file(file_path)
     type = 6
     
