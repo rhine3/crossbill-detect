@@ -3,13 +3,16 @@ from old_bird_detector_redux_1_1 import CrossbillDetector
 from audio_file_utils import read_wave_file, write_wave_file
 from bunch import Bunch 
 
-# Used to make directories to save detected calls to, and to remove preexisting dir with the same name 
+# To make directories to save detected calls to, and to remove preexisting dir with the same name 
 from os import path, makedirs
 from shutil import rmtree
 import numpy # write_wave_file takes detections in the form of an nparray
 
 # Own utility to plot bar chart of lengths of detections in sample
 from plotter import frequency_bar_plotter
+
+# For command-line arguments
+import sys
 
 class _Listener:
     
@@ -44,21 +47,33 @@ def average_length(detections, sample_rate):
 def make_dir(dir_name, mode):
     ''' 
     Creates a directory if it doesn't already exist. 
-    If mode is 1, function recursively deletes everything in preexisting directory.
+    If directory does exist:
+        - if mode is 0, function doesn't delete previous directory or make a new directory
+        - if mode is 1, function recursively deletes everything in preexisting directory
+        - if mode is 2, function makes a new directory with a number appended to it
     '''
     
     if not path.exists(dir_name):
-        print("Making directory.")
+        print("Making directory, '{}'.".format(dir_name))
         makedirs(dir_name)
+    elif mode == 0:
+        print("Warning: '{}/' already exists. Some contents may be overwritten.".format(dir_name))
     elif mode == 1:
         print("Deleting previous directory")
         rmtree(dir_name)
-    else: 
-        print("Warning: '{}/' already exists. Some contents may be overwritten.".format(dir_name))
+    else: #mode == 2
+        increment = 2
+        new_name = dir_name + str(increment)
+        while path.exists(new_name):
+            increment += 1
+            new_name = dir_name + str(increment)
+        dir_name = new_name
+        print("Making directory '{}/'.".format(dir_name))
+        makedirs(dir_name)
     
+    return dir_name
     
-    
-def detections_to_files(samples, detections, sample_rate):
+def detections_to_files(samples, detections, sample_rate, dir_name):
     '''
     Uses write_wave_file() from Vesper's audio_file_utils to write audio files given 
     their start time and length in samples.
@@ -70,9 +85,6 @@ def detections_to_files(samples, detections, sample_rate):
     '''
     
     lengths = []
-    
-    # make a "detections/" folder if it doesn't already exist
-    make_dir("detections", 0)
     
     # write clips to "detections/"
     for detection in detections:
@@ -87,7 +99,7 @@ def detections_to_files(samples, detections, sample_rate):
         
         # create filename indicating clip start in milliseconds
         start_sec = int(1000 * start/sample_rate)
-        filename = "detections/clip{}.wav".format(start_sec)
+        filename = "{}/clip{}.wav".format(dir_name, start_sec)
         
         # create 2D numpy array of detections
         clip = numpy.array([samples[0][start:start+length], samples[1][start:start+length]], numpy.int32)
@@ -97,19 +109,6 @@ def detections_to_files(samples, detections, sample_rate):
         # print("{} saved".format(filename))
         
     return lengths
-
-def input():
-    '''
-    Will eventually be used to get user input from command line arg--either a file or a folder
-    '''
-    
-    # Get user input
-    # If folder, return [folder path, 'folder']
-    # If file, return [file path, 'file']
-    # Else, return [FALSE, 0]
-    
-    return input
-
     
 def channel_counter(samples, filename):
     '''
@@ -135,22 +134,16 @@ def channel_counter(samples, filename):
     else:
         return []
     
-def main():
-    # get file or folder as user input
-    
-    #file_path = "smaller_sample.wav"
-    file_path = "wav-files/sample.wav"
-    #file_path = "Type 2_66622211_flock_16bit.wav"
-    
+def detect_from_file(filename):
     # read sample file within directory
-    (samples, sample_rate) = read_wave_file(file_path)
+    (samples, sample_rate) = read_wave_file(filename)
     type = 2
     
     # this function will be notified
     listener = _Listener()
     
     # get a single channel
-    sample = channel_counter(samples, file_path)
+    sample = channel_counter(samples, filename)
     
     # run detection pipeline
     detector = CrossbillDetector(sample_rate, listener, type)
@@ -160,12 +153,43 @@ def main():
     # find average length of clips
     #average_length(listener.clips, sample_rate)
     
-    # create files and return lengths of files in samples
-    lengths = detections_to_files(samples, listener.clips, sample_rate)
+    # make a "detections/" folder or similar if it doesn't already exist
+    dir_name = make_dir("detections", 2)
+    
+    # create files in new folder and return lengths of files in samples
+    lengths = detections_to_files(samples, listener.clips, sample_rate, dir_name)
     
     # plot lengths of detections
     frequency_bar_plotter(lengths)
     
-    print("Files saved in 'detections/'.")
+    # print confirmation
+    print("Files saved in '{}/'".format(dir_name))
+    
+    
+def input_validation():
+    '''
+    Will eventually be used to get user input from command line arg--either a file or a folder
+    '''
+    
+    # Get user input
+    # If folder, return [folder path, 'folder']
+    # If file, return [file path, 'file']
+    # Else, return [FALSE, 0]
+    
+    return ("wav-files/sample.wav", 'file')
+    
+    return input
+
+def main():
+    # get file or folder as user input
+    (input_path, input_type) = input_validation()
+    
+    if input_type == 'file':
+        detect_from_file(input_path)
+        
+    elif input_type == "folder":
+        # run detector on every file in directory
+        for filename in os.listdir(input_path):
+            detect_from_file(filename)
 
 main()
