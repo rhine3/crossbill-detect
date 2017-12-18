@@ -85,8 +85,8 @@ _CROSSBILL_SETTINGS_6 = Bunch(
 )
 
 _CROSSBILL_SETTINGS_2 = Bunch(
-    filter_f0=2100,                     # hertz #RECR modification
-    filter_f1=4000,                     # hertz #RECR modification
+    filter_f0=1000,                     # hertz #RECR modification
+    filter_f1=4400,                     # hertz #RECR modification
     filter_bw=100,                      # hertz
     filter_duration=100 / _OLD_FS,      # seconds
     integration_time=4000 / _OLD_FS,    # seconds
