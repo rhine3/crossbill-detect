@@ -35,7 +35,8 @@ def average_length(detections, sample_rate):
     avg_samples = sample_total / num_detections
     print(avg_samples)
     print(avg_samples*sample_rate)
-     
+    
+    
 def make_dir(dir_name, mode):
     ''' 
     Creates a directory if it doesn't already exist. 
@@ -50,6 +51,8 @@ def make_dir(dir_name, mode):
         rmtree(dir_name)
     else: 
         print("Warning: '{}/' already exists. Some contents may be overwritten.".format(dir_name))
+    
+    
     
 def detections_to_files(samples, detections, sample_rate):
     '''
@@ -92,7 +95,9 @@ def detections_to_files(samples, detections, sample_rate):
     return lengths
 
 def input():
-    # Get user input from command line arg--either a file or a folder
+    '''
+    Will eventually be used to get user input from command line arg--either a file or a folder
+    '''
     
     # Get user input
     # If folder, return [folder path, 'folder']
@@ -129,15 +134,16 @@ def channel_counter(samples, filename):
 def main():
     # read sample file within directory
     # PUT FILENAME HERE
-    file_path = "sample.wav"
+    file_path = "smaller_sample.wav"
+    #file_path = "sample.wav"
     #file_path = "Type 2_66622211_flock_16bit.wav"
     (samples, sample_rate) = read_wave_file(file_path)
-    type = 6
+    type = 2
     
     # this function will be notified
     listener = _Listener()
     
-    # get a single 
+    # get a single channel
     sample = channel_counter(samples, file_path)
     
     # run detection pipeline
