@@ -1,11 +1,15 @@
+# Harold Mills's utilities (CrossbillDetector is my modification to the original ThrushDetector)
 from old_bird_detector_redux_1_1 import CrossbillDetector
 from audio_file_utils import read_wave_file, write_wave_file
-from bunch import Bunch
+from bunch import Bunch 
+
+# Used to make directories to save detected calls to, and to remove preexisting dir with the same name 
 from os import path, makedirs
 from shutil import rmtree
-import numpy
-from plotter import frequency_bar_plotter
+import numpy # write_wave_file takes detections in the form of an nparray
 
+# Own utility to plot bar chart of lengths of detections in sample
+from plotter import frequency_bar_plotter
 
 class _Listener:
     
@@ -76,7 +80,7 @@ def detections_to_files(samples, detections, sample_rate):
         
         lengths.append(length)
         
-        # skip detection if long detection--I have no idea why all the detections are 4205 samples long
+        # issue: why are so many of the correct detections 4205 samples long?
         #if length != 4205:
         #   print(length)
         #   continue
@@ -132,11 +136,13 @@ def channel_counter(samples, filename):
         return []
     
 def main():
-    # read sample file within directory
-    # PUT FILENAME HERE
-    file_path = "smaller_sample.wav"
-    #file_path = "sample.wav"
+    # get file or folder as user input
+    
+    #file_path = "smaller_sample.wav"
+    file_path = "wav-files/sample.wav"
     #file_path = "Type 2_66622211_flock_16bit.wav"
+    
+    # read sample file within directory
     (samples, sample_rate) = read_wave_file(file_path)
     type = 2
     
