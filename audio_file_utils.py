@@ -3,7 +3,7 @@ Copied from Harold Mill's Vesper project: https://github.com/HaroldMills/Vesper/
 
 Functions pertaining to audio files.
 
-For the time being, only .wav files are supported.
+For the time being, only 16-bit .wav files are supported.
 '''
 
 
