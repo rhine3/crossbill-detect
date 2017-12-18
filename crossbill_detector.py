@@ -3,8 +3,8 @@ from old_bird_detector_redux_1_1 import CrossbillDetector
 from audio_file_utils import read_wave_file, write_wave_file
 from bunch import Bunch 
 
-# To make directories to save detected calls to, and to remove preexisting dir with the same name 
-from os import path, makedirs
+# Various ops related to reading in samples and saving detections
+from os import path, makedirs, listdir
 from shutil import rmtree
 import numpy # write_wave_file takes detections in the form of an nparray
 
@@ -54,7 +54,7 @@ def make_dir(dir_name, mode):
     '''
     
     if not path.exists(dir_name):
-        print("Making directory, '{}'.".format(dir_name))
+        print("Making directory '{}/'.".format(dir_name))
         makedirs(dir_name)
     elif mode == 0:
         print("Warning: '{}/' already exists. Some contents may be overwritten.".format(dir_name))
@@ -176,9 +176,8 @@ def input_validation():
     # If file, return [file path, 'file']
     # Else, return [FALSE, 0]
     
-    return ("wav-files/sample.wav", 'file')
+    return ("wav-files/", 'folder')
     
-    return input
 
 def main():
     # get file or folder as user input
@@ -189,7 +188,8 @@ def main():
         
     elif input_type == "folder":
         # run detector on every file in directory
-        for filename in os.listdir(input_path):
-            detect_from_file(filename)
+        for filename in listdir(input_path):
+            file_path = input_path + filename
+            detect_from_file(file_path)
 
 main()
