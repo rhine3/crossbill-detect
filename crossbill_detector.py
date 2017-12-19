@@ -1,3 +1,5 @@
+
+
 # Harold Mills's utilities (CrossbillDetector is my modification to the original ThrushDetector)
 from old_bird_detector_redux_1_1 import CrossbillDetector
 from audio_file_utils import read_wave_file, write_wave_file
@@ -11,8 +13,10 @@ import numpy # write_wave_file takes detections in the form of an nparray
 # Own utility to plot bar chart of lengths of detections in sample
 from plotter import frequency_bar_plotter
 
-# For validating files and using command line arguments
+# For validating files/directories and using command line arguments
 from argument_parser import is_directory, is_wav_file, input_validation
+
+import logging
 
 class _Listener:
     
@@ -23,25 +27,28 @@ class _Listener:
         self.clips.append((start_index, length))
 
 def average_length(detections, sample_rate):
+    '''
+    Find average sample length
+    '''
     # compute average length in number of samples--only non-outliers (<0.05)
     num_detections = 0
     sample_total = 0
     
     # calculate upper limit of number of samples--higher than 0.15 sec implies detection outlier
     upper_limit = 0.15 * sample_rate
-    print(upper_limit)
+    #print(upper_limit)
     
     for detection in detections:
         detection_length = detection[1]
-        print(detection_length)
+        #print(detection_length)
         if detection_length < upper_limit:
-            print("hello!")
+            #print("hello!")
             num_detections += 1
             sample_total += detection_length
     
     avg_samples = sample_total / num_detections
-    print(avg_samples)
-    print(avg_samples*sample_rate)
+    #print(avg_samples)
+    #print(avg_samples*sample_rate)
     
     
 def make_dir(dir_name, mode):
@@ -54,12 +61,12 @@ def make_dir(dir_name, mode):
     '''
     
     if not is_directory(dir_name):
-        print("Making directory '{}/'.".format(dir_name))
+        logging.info("Making directory '{}/'".format(dir_name))
         makedirs(dir_name)
     elif mode == 0:
-        print("Warning: '{}/' already exists. Some contents may be overwritten.".format(dir_name))
+        logging.warning("Warning: '{}/' already exists; some contents may be overwritten".format(dir_name))
     elif mode == 1:
-        print("Deleting previous directory")
+        logging.warning("Warning: deleting preexisting directory '{}'/".format(dir_name))
         rmtree(dir_name)
     else: #mode == 2
         increment = 2
@@ -68,7 +75,7 @@ def make_dir(dir_name, mode):
             increment += 1
             new_name = dir_name + str(increment)
         dir_name = new_name
-        print("Making directory '{}/'.".format(dir_name))
+        logging.info("Making directory '{}/'".format(dir_name))
         makedirs(dir_name)
     
     return dir_name
@@ -121,15 +128,15 @@ def channel_counter(samples, filename):
     if len(samples) > 1:
         if len(samples) == 2: 
             if samples[0].all() == samples[1].all():
-                print("Read file {} contains two identical channels.".format(filename))
+                logging.warning("File '{}' contains two identical channels as read".format(filename))
             else:
-                print("Read file {} contains two non-identical channels.".format(filename))
+                logging.warning("File '{}' contains two non-identical channels as read".format(filename))
         else:
-            print("Multiple channels in input file {}.".format(filename))
-        print("Processing first channel.")
+            logging.warning("Multiple channels in file '{}' as read".format(filename))
+        logging.info("Processing first channel")
         return samples[0]
     elif len(samples) == 1:
-        print("Processing single channel in file {}.".format(filename))
+        logging.info("Processing single channel in file '{}'".format(filename))
         return samples[0]
     else:
         return []
@@ -159,36 +166,38 @@ def detect_from_file(filename):
     # create files in new folder and return lengths of files in samples
     lengths = detections_to_files(samples, listener.clips, sample_rate, dir_name)
     
-    # print some final information
-    frequency_bar_plotter(lengths)
+    #  some final information
+    #frequency_bar_plotter(lengths)
     print("Files saved in '{}/'".format(dir_name))
 
 
 def main():
     # get file or folder as user input 
     input = input_validation() # function from parser.py
+   
+    if input['verbose']:
+        logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.WARNING)
     
     # if a file was provided, detect calls within it
     if input['file']:
-        print("Detecting .")
         detect_from_file(input.file)
         return
     
     # if a directory was provided, detect calls within all files in directory
     elif input['dir']:
-        print("Got a directory.")
         directory = input['dir']
         
         # run detector on every file ending with .wav in directory
         for filename in listdir(directory):
-            file_path = directory + '/' + filename
-            print(file_path)
+            file_path = directory + filename
             if is_wav_file(file_path): # function from parser.py
                 detect_from_file(file_path)
             else:
-                print("Skipping '{}': not a .wav file.".format(file_path))
+                logging.warning("Skipping '{}': not a .wav file".format(file_path))
     
     else:
-        print("Please specify a file with -f or a directory with -d. For help use flag -h.")   
+        print("Please specify a file with -f or a directory with -d. For help use flag -h")   
 
 main()
