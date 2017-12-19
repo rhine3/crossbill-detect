@@ -1,11 +1,10 @@
-
 import matplotlib.pyplot as plt
 
 def frequency_bar_plotter(array):
     '''
-    Creates a bar plot of an array, with unique array elements as
-    x-axis and the frequency of each element within the array 
-    as the y-axis. (Doesn't actually plot yet!)
+    Eventually will create a bar plot of an array, with unique array 
+    elements as x-axis and the frequency of each element within the array 
+    as the y-axis. (For now, just prints the equivalent of this information.)
     '''
     dict = {}
     
@@ -22,5 +21,5 @@ def frequency_bar_plotter(array):
     for key, value in dict.items():
         buckets.append(key)
         vals.append(value)
-        print("{} samples: {} clips.".format(key, value))
+        print("{} samples: {} clips".format(key, value))
     
