@@ -1,7 +1,5 @@
-
-
-# Harold Mills's utilities (CrossbillDetector is my modification to the original ThrushDetector)
-from old_bird_detector_redux_1_1 import CrossbillDetector
+# Harold Mills's utilities (CrossbillDetector and OpenDetector are my modifications)
+from old_bird_detector_redux_1_1 import CrossbillDetector, OpenDetector
 from audio_file_utils import read_wave_file, write_wave_file
 from bunch import Bunch 
 
@@ -73,7 +71,7 @@ def make_dir(dir_name, mode):
         new_name = dir_name + str(increment)
         while is_directory(new_name):
             increment += 1
-            new_name = dir_name + str(increment)
+            new_name = dir_name + '-' + str(increment)
         dir_name = new_name
         logging.info("Making directory '{}/'".format(dir_name))
         makedirs(dir_name)
@@ -141,10 +139,69 @@ def channel_counter(samples, filename):
     else:
         return []
     
-def detect_from_file(filename):
+def settings_testing(filename):
+    '''
+    For trying a whole bunch of different settings
+    '''
+    
+    settings_group = []
+    f0_settings = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600]
+    OLD_FS = 22050
+    
+    for i in range(10):
+        generated_settings = Bunch(
+            name = 'settings' + str(i),
+            filter_f0 = f0_settings[i],         # hertz #RECR modification
+            filter_f1=4400,                     # hertz #RECR modification
+            filter_bw=100,                      # hertz
+            filter_duration=100 / OLD_FS,      # seconds
+            integration_time=4000 / OLD_FS,    # seconds
+            ratio_delay=.02,                    # seconds
+            ratio_threshold=1.3,                # dimensionless
+            min_duration=.030,                  # seconds #RECR modification
+            max_duration=.050,                  # seconds #RECR modification
+            initial_padding=1000 / OLD_FS,     # seconds #RECR modification
+            suppressor_count_threshold=10,      # clips
+            suppressor_period=20                # seconds
+        )
+        settings_group.append(generated_settings)
+    
+    for settings in settings_group:
+        detect_from_file_test(filename, settings)
+
+
+def detect_from_file_test(filename, settings):
     # read sample file within directory
     (samples, sample_rate) = read_wave_file(filename)
-    type = 2
+    
+    # this function will be notified
+    listener = _Listener()
+    
+    # get a single channel
+    sample = channel_counter(samples, filename)
+    
+    # TEST: run detection pipeline
+    detector = OpenDetector(sample_rate, listener, settings)
+    detector.detect(sample)
+    detector.complete_detection()
+
+    # find average length of clips
+    #average_length(listener.clips, sample_rate)
+    
+    # make a "detections/" folder or similar if it doesn't already exist
+    # TEST: add name of settings to directory
+    dir_name = make_dir("detections-"+settings.name, 2)
+    
+    # create files in new folder and return lengths of files in samples
+    lengths = detections_to_files(samples, listener.clips, sample_rate, dir_name)
+    
+    #  some final information
+    #frequency_bar_plotter(lengths)
+    print("Files saved in '{}/'".format(dir_name))
+    
+def detect_from_file(filename, settings):
+    # read sample file within directory
+    (samples, sample_rate) = read_wave_file(filename)
     
     # this function will be notified
     listener = _Listener()
@@ -153,6 +210,7 @@ def detect_from_file(filename):
     sample = channel_counter(samples, filename)
     
     # run detection pipeline
+    type = 2
     detector = CrossbillDetector(sample_rate, listener, type)
     detector.detect(sample)
     detector.complete_detection()
@@ -182,7 +240,9 @@ def main():
     
     # if a file was provided, detect calls within it
     if input['file']:
-        detect_from_file(input.file)
+        # TEST:
+        #detect_from_file(input['file'])
+        settings_testing(input['file'])
         return
     
     # if a directory was provided, detect calls within all files in directory
