@@ -4,15 +4,15 @@ from audio_file_utils import read_wave_file, write_wave_file
 from bunch import Bunch 
 
 # Various ops related to reading in samples and saving detections
-from os import path, makedirs, listdir
+from os import makedirs, listdir
 from shutil import rmtree
 import numpy # write_wave_file takes detections in the form of an nparray
 
 # Own utility to plot bar chart of lengths of detections in sample
 from plotter import frequency_bar_plotter
 
-# For validating and using command-line arguments
-import argparse
+# For validating files and using command line arguments
+from argument_parser import is_directory, is_wav_file, input_validation
 
 class _Listener:
     
@@ -53,7 +53,7 @@ def make_dir(dir_name, mode):
         - if mode is 2, function makes a new directory with a number appended to it
     '''
     
-    if not path.exists(dir_name):
+    if not is_directory(dir_name):
         print("Making directory '{}/'.".format(dir_name))
         makedirs(dir_name)
     elif mode == 0:
@@ -64,7 +64,7 @@ def make_dir(dir_name, mode):
     else: #mode == 2
         increment = 2
         new_name = dir_name + str(increment)
-        while path.exists(new_name):
+        while is_directory(new_name):
             increment += 1
             new_name = dir_name + str(increment)
         dir_name = new_name
@@ -159,59 +159,14 @@ def detect_from_file(filename):
     # create files in new folder and return lengths of files in samples
     lengths = detections_to_files(samples, listener.clips, sample_rate, dir_name)
     
-    # plot lengths of detections
+    # print some final information
     frequency_bar_plotter(lengths)
-    
-    # print confirmation
     print("Files saved in '{}/'".format(dir_name))
-   
-def is_wav_file(filename):
-    '''Returns True if filename is an existing .wav file, False otherwise'''
-    if path.isfile(filename) and filename.endswith('.wav'):
-        return True
-    return False
-    
-def parse_file(filename):
-    '''For parsing arguments with flag -f or --file'''
-    if not is_wav_file(filename):
-        msg = "'{}' is not a valid .wav file.".format(filename)
-    return filename
 
-def parse_directory(dir):
-    '''For parsing arguments with flag -d or --dir'''
-    if not path.exists(dir): 
-        msg = "'{}/' is not a valid directory.".format(dir)
-        raise argparse.ArgumentTypeError(msg)
-    return dir
-    
-
-def input_validation():
-    '''
-    Will eventually be used to get user input from command line arg--either a file or a folder
-    '''
-    # initialize ArgumentParser
-    parser = argparse.ArgumentParser(
-        description='Detect crossbill calls from 16-bit wav files. \
-            Can be run with a single .wav file or with a folder of .wav files.', add_help=True)
-    
-    # add argument options for a single file or a directory
-    files = parser.add_mutually_exclusive_group(required=False)
-    files.add_argument('-f', '--file', metavar='FILE.wav', type=parse_directory, action='store', dest='file',
-        help='detect calls in a .wav file')
-    
-    # add argument for which type is in the file (currently nothing is done with this information)
-    files.add_argument('-d', '--dir', metavar='DIRECTORY/', type=parse_file, action='store', dest='dir',
-        help='detect calls in all .wav files within directory')
-        
-    parser.add_argument('-t', '--type', metavar='TYPE', type=int, action='store', dest='type', 
-        help='a crossbill call type from 1 to 10')
-    args = parser.parse_args()
-    return vars(args)
-    
 
 def main():
-    # get file or folder as user input
-    input = input_validation()
+    # get file or folder as user input 
+    input = input_validation() # function from parser.py
     
     # if a file was provided, detect calls within it
     if input['file']:
@@ -228,8 +183,10 @@ def main():
         for filename in listdir(directory):
             file_path = directory + '/' + filename
             print(file_path)
-            if is_wav_file(file_path):
+            if is_wav_file(file_path): # function from parser.py
                 detect_from_file(file_path)
+            else:
+                print("Skipping '{}': not a .wav file.".format(file_path))
     
     else:
         print("Please specify a file with -f or a directory with -d. For help use flag -h.")   
