@@ -838,6 +838,14 @@ class CrossbillDetector(_Detector):
     
         settings = settings_dict[type]
         super().__init__(settings, sample_rate, listener)
+
+# RECR: New class that allows user to input own settings        
+class OpenDetector(_Detector):
+    
+    extension_name = 'Crossbill Detector'
+    
+    def __init__(self, sample_rate, listener, settings):
+        super().__init__(settings, sample_rate, listener)
         
         
 def _firls(numtaps, bands, desired):
