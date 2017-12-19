@@ -11,8 +11,8 @@ import numpy # write_wave_file takes detections in the form of an nparray
 # Own utility to plot bar chart of lengths of detections in sample
 from plotter import frequency_bar_plotter
 
-# For command-line arguments
-import sys
+# For validating and using command-line arguments
+import argparse
 
 class _Listener:
     
@@ -164,32 +164,74 @@ def detect_from_file(filename):
     
     # print confirmation
     print("Files saved in '{}/'".format(dir_name))
+   
+def is_wav_file(filename):
+    '''Returns True if filename is an existing .wav file, False otherwise'''
+    if path.isfile(filename) and filename.endswith('.wav'):
+        return True
+    return False
     
+def parse_file(filename):
+    '''For parsing arguments with flag -f or --file'''
+    if not is_wav_file(filename):
+        msg = "'{}' is not a valid .wav file.".format(filename)
+    return filename
+
+def parse_directory(dir):
+    '''For parsing arguments with flag -d or --dir'''
+    if not path.exists(dir): 
+        msg = "'{}/' is not a valid directory.".format(dir)
+        raise argparse.ArgumentTypeError(msg)
+    return dir
     
+
 def input_validation():
     '''
     Will eventually be used to get user input from command line arg--either a file or a folder
     '''
+    # initialize ArgumentParser
+    parser = argparse.ArgumentParser(
+        description='Detect crossbill calls from 16-bit wav files. \
+            Can be run with a single .wav file or with a folder of .wav files.', add_help=True)
     
-    # Get user input
-    # If folder, return [folder path, 'folder']
-    # If file, return [file path, 'file']
-    # Else, return [FALSE, 0]
+    # add argument options for a single file or a directory
+    files = parser.add_mutually_exclusive_group(required=False)
+    files.add_argument('-f', '--file', metavar='FILE.wav', type=parse_directory, action='store', dest='file',
+        help='detect calls in a .wav file')
     
-    return ("wav-files/", 'folder')
+    # add argument for which type is in the file (currently nothing is done with this information)
+    files.add_argument('-d', '--dir', metavar='DIRECTORY/', type=parse_file, action='store', dest='dir',
+        help='detect calls in all .wav files within directory')
+        
+    parser.add_argument('-t', '--type', metavar='TYPE', type=int, action='store', dest='type', 
+        help='a crossbill call type from 1 to 10')
+    args = parser.parse_args()
+    return vars(args)
     
 
 def main():
     # get file or folder as user input
-    (input_path, input_type) = input_validation()
+    input = input_validation()
     
-    if input_type == 'file':
-        detect_from_file(input_path)
+    # if a file was provided, detect calls within it
+    if input['file']:
+        print("Detecting .")
+        detect_from_file(input.file)
+        return
+    
+    # if a directory was provided, detect calls within all files in directory
+    elif input['dir']:
+        print("Got a directory.")
+        directory = input['dir']
         
-    elif input_type == "folder":
-        # run detector on every file in directory
-        for filename in listdir(input_path):
-            file_path = input_path + filename
-            detect_from_file(file_path)
+        # run detector on every file ending with .wav in directory
+        for filename in listdir(directory):
+            file_path = directory + '/' + filename
+            print(file_path)
+            if is_wav_file(file_path):
+                detect_from_file(file_path)
+    
+    else:
+        print("Please specify a file with -f or a directory with -d. For help use flag -h.")   
 
 main()
