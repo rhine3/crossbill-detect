@@ -117,7 +117,7 @@ def detections_to_files(samples, detections, sample_rate, dir_name):
     
 def channel_counter(samples, filename):
     '''
-    Returns a single subarray from `samples`, a two-dimensional array of channels of sound
+    Returns the first subarray from `samples`, a two-dimensional array of channels of sound
     read from a .wav file.
     
     Prints different messages depending on how many subarrays are present, and 
@@ -141,7 +141,8 @@ def channel_counter(samples, filename):
     
 def settings_testing(filename):
     '''
-    For trying a whole bunch of different settings
+    For trying a whole bunch of different settings. Creates several settings "Bunches"
+    to be used by function detect_from_file_test
     '''
     
     settings_group = []
@@ -171,6 +172,10 @@ def settings_testing(filename):
 
 
 def detect_from_file_test(filename, settings):
+    '''
+    Differs from detect_from_file by using "OpenDetector" which allows
+    the user to call the detector with their own settings
+    '''
     # read sample file within directory
     (samples, sample_rate) = read_wave_file(filename)
     
@@ -200,6 +205,10 @@ def detect_from_file_test(filename, settings):
     print("Files saved in '{}/'".format(dir_name))
     
 def detect_from_file(filename, settings):
+    '''
+    Calls CrossbillDetector to detect crossbill calls of a desired type. 
+    Makes a new directory, then saves these detections using detections_to_files
+    '''
     # read sample file within directory
     (samples, sample_rate) = read_wave_file(filename)
     
@@ -240,8 +249,8 @@ def main():
     
     # if a file was provided, detect calls within it
     if input['file']:
+        detect_from_file(input['file'])
         # TEST:
-        #detect_from_file(input['file'])
         settings_testing(input['file'])
         return
     
