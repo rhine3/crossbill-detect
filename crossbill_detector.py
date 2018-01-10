@@ -40,7 +40,7 @@ def average_length(detections, sample_rate):
         detection_length = detection[1]
         #print(detection_length)
         if detection_length < upper_limit:
-            #print("hello!")
+            #print("detection exceeds determined sample limit")
             num_detections += 1
             sample_total += detection_length
     
