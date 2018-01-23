@@ -204,7 +204,7 @@ def detect_from_file_test(filename, settings):
     #frequency_bar_plotter(lengths)
     print("Files saved in '{}/'".format(dir_name))
     
-def detect_from_file(filename, settings):
+def detect_from_file(filename):
     '''
     Calls CrossbillDetector to detect crossbill calls of a desired type. 
     Makes a new directory, then saves these detections using detections_to_files
@@ -251,7 +251,7 @@ def main():
     if input['file']:
         detect_from_file(input['file'])
         # TEST:
-        settings_testing(input['file'])
+        #settings_testing(input['file'])
         return
     
     # if a directory was provided, detect calls within all files in directory
