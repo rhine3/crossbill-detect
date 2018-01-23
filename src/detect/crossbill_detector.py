@@ -25,7 +25,11 @@ from plotter import frequency_bar_plotter
 # For validating files/directories and using command line arguments
 from argument_parser import is_directory, is_wav_file, input_validation
 
+# For levels of verbosity in error logging
 import logging
+
+repo_path = 'C:/Users/tessa/drive/red-crossbills/crossbill-detect'
+
 
 class _Listener:
     
@@ -102,7 +106,7 @@ def detections_to_files(samples, detections, sample_rate, dir_name):
     
     lengths = []
     
-    # write clips to "detections/"
+    # write clips to `dir_name/`
     for detection in detections:
         (start, length) = detection
         
@@ -122,7 +126,7 @@ def detections_to_files(samples, detections, sample_rate, dir_name):
         
         # warning: will overwrite any clips that already exist
         write_wave_file(filename, clip, sample_rate)
-        # logging.info("{} saved".format(filename))
+        logging.info("{} saved".format(filename))
         
     return lengths
     
@@ -206,7 +210,7 @@ def detect_from_file_test(filename, settings):
     
     # make a "detections/" folder or similar if it doesn't already exist
     # TEST: add name of settings to directory
-    dir_name = make_dir("detections-"+settings.name, 2)
+    dir_name = make_dir(repo_path+"/detections-"+settings.name, 2)
     
     # create files in new folder and return lengths of files in samples
     lengths = detections_to_files(samples, listener.clips, sample_rate, dir_name)
@@ -239,7 +243,8 @@ def detect_from_file(filename):
     #average_length(listener.clips, sample_rate)
     
     # make a "detections/" folder or similar if it doesn't already exist
-    dir_name = make_dir("detections", 2)
+    dir_name = make_dir(repo_path+"/detections", 2)
+    print(dir_name)
     
     # create files in new folder and return lengths of files in samples
     lengths = detections_to_files(samples, listener.clips, sample_rate, dir_name)
