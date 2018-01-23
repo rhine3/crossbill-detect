@@ -1,3 +1,14 @@
+'''
+crossbill_detector.py
+by Tessa Rhinehart
+
+Wrapper for Harold Mill's reimplementation of the Old Bird NFC detectors.
+
+Usage: 
+$ python crossbill_detector.py -f <filename.wav>
+$ python crossbill_detector.py -d <directory-of-wav-files/>
+'''
+
 # Harold Mills's utilities (CrossbillDetector and OpenDetector are my modifications)
 from old_bird_detector_redux_1_1 import CrossbillDetector, OpenDetector
 from audio_file_utils import read_wave_file, write_wave_file
@@ -34,19 +45,19 @@ def average_length(detections, sample_rate):
     
     # calculate upper limit of number of samples--higher than 0.15 sec implies detection outlier
     upper_limit = 0.15 * sample_rate
-    #print(upper_limit)
+    #logging.info(upper_limit)
     
     for detection in detections:
         detection_length = detection[1]
-        #print(detection_length)
+        #logging.info(detection_length)
         if detection_length < upper_limit:
-            #print("detection exceeds determined sample limit")
+            #logging.info("detection exceeds determined sample limit")
             num_detections += 1
             sample_total += detection_length
     
     avg_samples = sample_total / num_detections
-    #print(avg_samples)
-    #print(avg_samples*sample_rate)
+    #logging.info(avg_samples)
+    #logging.info(avg_samples*sample_rate)
     
     
 def make_dir(dir_name, mode):
@@ -99,7 +110,7 @@ def detections_to_files(samples, detections, sample_rate, dir_name):
         
         # issue: why are so many of the correct detections 4205 samples long?
         #if length != 4205:
-        #   print(length)
+        #   logging.info(length)
         #   continue
         
         # create filename indicating clip start in milliseconds
@@ -111,7 +122,7 @@ def detections_to_files(samples, detections, sample_rate, dir_name):
         
         # warning: will overwrite any clips that already exist
         write_wave_file(filename, clip, sample_rate)
-        # print("{} saved".format(filename))
+        # logging.info("{} saved".format(filename))
         
     return lengths
     
