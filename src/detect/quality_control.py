@@ -1,13 +1,19 @@
 '''
 quality_control.py
 
-A user interface for performing quality control on audio files.
+A GUI for performing quality control on audio files.
 '''
 
 # For creating a spectrogram
 from scipy import signal
 import matplotlib.pyplot as plt
 from audio_file_utils import read_wave_file
+
+# For finding filename within path
+from ntpath import basename 
+
+# For GUI (?)
+
     
 def main():
     
@@ -22,16 +28,48 @@ def main():
     #       if no,
     filename = "C:/Users/tessa/drive/red-crossbills/crossbill-detect/detections/clip2936.wav"
     # Generate image
-    test_spec_settings(filename)
+    save_spectrogram(filename, 'C:/Users/tessa/drive/red-crossbills/crossbill-detect/')
+    #test_spec_settings(filename)
     # Handle user responses: Is it a crossbill? What type? Multiple calls?
 
+def save_spectrogram(origin_file, destination_path):
+    '''Generates a spectrogram from filename (a .wav file) and saves it 
+    to a .png file in destination_path'''
+    
+    # read wave file
+    (samples, sample_rate) = read_wave_file(origin_file)
+    samples = samples[0]
+    
+    fig, ax = plt.subplots(figsize=(1,1))
+    
+    spectrum, freqs, t, im = plt.specgram(
+        samples,
+        Fs = 20000,
+        NFFT = 450, # window size
+        pad_to = 512,
+        cmap = 'gray_r', # gray color map
+    )
+    
+    plt.gca().set_ylim([0, 2000])
+    
+    # Create descriptive filename
+    wav_filename = basename(origin_file)
+    filename = wav_filename.replace('.wav','')
+    name = destination_path+filename+".png"
+    
+    # Remove axis ticks/labels and remove whitespace
+    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)   
+    
+    plt.savefig(name)
+    
 
+    
 def test_spec_settings(filename):
     '''
     filename: path to a .wav file
     
-    Allows visual inspection of several combinations of settings for 
-    spectrogram block size (NFFT) and padding (pad_to)
+    Allows visual inspection of several combinations of spectrograms produced 
+    by combinations of settings for block size (NFFT) and padding (pad_to)
     
     Best settings seem to be (NFFT, pad_to) = (450, 512)
     '''
