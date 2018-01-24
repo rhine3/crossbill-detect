@@ -38,6 +38,7 @@ class _Listener:
         self.clips = []
         
     def process_clip(self, start_index, length):
+        '''Called for every clip found by Old Bird detector'''
         self.clips.append((start_index, length))
 
 def average_length(detections, sample_rate):
