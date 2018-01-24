@@ -1,5 +1,6 @@
 '''
 spectrogram_utils.py
+by Tessa Rhinehart
 
 Utilities for creating and exporting spectrograms.
 '''
@@ -53,8 +54,7 @@ def make_spectrogram(origin_file):
 def save_spectrogram(origin_file, destination_path, fig):
     '''Saves a spectrogram with a similar name as its origin file
     e.g. if the origin path is: data/clip3320.wav
-            the spectrogram path is: destination_path/clip3320.png)
-            '''
+    the spectrogram path is: destination_path/clip3320.png)'''
     
     # Create descriptive filename & append desired path
     filename = basename(origin_file).replace('.wav', '')
