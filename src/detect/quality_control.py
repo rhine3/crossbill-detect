@@ -34,7 +34,7 @@ def main():
 
 def save_spectrogram(origin_file, destination_path):
     '''Generates a spectrogram from filename (a .wav file) and saves it 
-    to a .png file in destination_path'''
+    to a .png file in destination_path. Spectrogram has no whitespace.'''
     
     # read wave file
     (samples, sample_rate) = read_wave_file(origin_file)
