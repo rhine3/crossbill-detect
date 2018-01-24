@@ -94,7 +94,7 @@ def make_dir(dir_name, mode):
     
     return dir_name
     
-def detections_to_files(samples, detections, sample_rate, dir_name, original_path):
+def detections_to_files(samples, detections, sample_rate, dir_name, recording_name):
     '''
     Uses write_wave_file() from Vesper's audio_file_utils to write audio files given 
     their start time and length in samples.
@@ -106,7 +106,7 @@ def detections_to_files(samples, detections, sample_rate, dir_name, original_pat
     '''
     
     lengths = []
-    filename = basename(original_path)
+    logging.info("Saving files from {}.wav".format(recording_name))
     
     # write clips to `dir_name/`
     for detection in detections:
@@ -121,7 +121,7 @@ def detections_to_files(samples, detections, sample_rate, dir_name, original_pat
         
         # create filename indicating clip origin and start in milliseconds
         start_sec = int(1000 * start/sample_rate)
-        filename = "{}/{}_{}ms.wav".format(dir_name, filename, start_sec)
+        filename = "{}/{}_{}ms.wav".format(dir_name, recording_name, start_sec)
         
         # create 2D numpy array of detections
         clip = numpy.array([samples[0][start:start+length], samples[1][start:start+length]], numpy.int32)
@@ -228,7 +228,12 @@ def detect_from_file(filename, settings = None):
     dir_name = make_dir(preferred_name, 2) 
     
     # Create files in new directory and return lengths of files in samples
-    lengths = detections_to_files(samples, listener.clips, sample_rate, dir_name)
+    recording_name = basename(filename).replace('.wav','')
+    lengths = detections_to_files(samples, 
+        listener.clips, 
+        sample_rate, 
+        dir_name, 
+        recording_name)
     
     #  some final information
     #frequency_bar_plotter(lengths)
