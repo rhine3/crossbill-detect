@@ -18,6 +18,7 @@ from bunch import Bunch
 from os import makedirs, listdir
 from shutil import rmtree
 import numpy # write_wave_file takes detections in the form of an nparray
+from ntpath import basename # for finding filename within path
 
 # Own utility to plot bar chart of lengths of detections in sample
 from plotter import frequency_bar_plotter
@@ -93,7 +94,7 @@ def make_dir(dir_name, mode):
     
     return dir_name
     
-def detections_to_files(samples, detections, sample_rate, dir_name):
+def detections_to_files(samples, detections, sample_rate, dir_name, original_path):
     '''
     Uses write_wave_file() from Vesper's audio_file_utils to write audio files given 
     their start time and length in samples.
@@ -105,6 +106,7 @@ def detections_to_files(samples, detections, sample_rate, dir_name):
     '''
     
     lengths = []
+    filename = basename(original_path)
     
     # write clips to `dir_name/`
     for detection in detections:
@@ -117,9 +119,9 @@ def detections_to_files(samples, detections, sample_rate, dir_name):
         #   logging.info(length)
         #   continue
         
-        # create filename indicating clip start in milliseconds
+        # create filename indicating clip origin and start in milliseconds
         start_sec = int(1000 * start/sample_rate)
-        filename = "{}/clip{}.wav".format(dir_name, start_sec)
+        filename = "{}/{}_{}ms.wav".format(dir_name, filename, start_sec)
         
         # create 2D numpy array of detections
         clip = numpy.array([samples[0][start:start+length], samples[1][start:start+length]], numpy.int32)
