@@ -188,67 +188,46 @@ def settings_testing(filename):
         detect_from_file_test(filename, settings)
 
 
-def detect_from_file_test(filename, settings):
+def detect_from_file(filename, settings = None):
     '''
-    Differs from detect_from_file by using "OpenDetector" which allows
-    the user to call the detector with their own settings
-    '''
-    # read sample file within directory
-    (samples, sample_rate) = read_wave_file(filename)
     
-    # this function will be notified
-    listener = _Listener()
-    
-    # get a single channel
-    sample = channel_counter(samples, filename)
-    
-    # TEST: run detection pipeline
-    detector = OpenDetector(sample_rate, listener, settings)
-    detector.detect(sample)
-    detector.complete_detection()
-
-    # find average length of clips
-    #average_length(listener.clips, sample_rate)
-    
-    # make a "detections/" folder or similar if it doesn't already exist
-    # TEST: add name of settings to directory
-    dir_name = make_dir(repo_path+"/detections-"+settings.name, 2)
-    
-    # create files in new folder and return lengths of files in samples
-    lengths = detections_to_files(samples, listener.clips, sample_rate, dir_name)
-    
-    #  some final information
-    #frequency_bar_plotter(lengths)
-    print("Files saved in '{}/'".format(dir_name))
-    
-def detect_from_file(filename):
-    '''
-    Calls CrossbillDetector to detect crossbill calls of a desired type. 
+    Creates a detector object to detect crossbill calls of a desired type. 
     Makes a new directory, then saves these detections using detections_to_files
+    
+    If settings are provided, creates an "OpenDetector" which allows
+    the user to call the detector with their own settings. Otherwise, creates CrossbillDetector.
     '''
-    # read sample file within directory
+    
+    # Generate a two-dimensional numpy array frome wave file
+    # nparray is of shape (num_channels, num_samples)
     (samples, sample_rate) = read_wave_file(filename)
     
-    # this function will be notified
+    # This function will be notified by the detector
     listener = _Listener()
     
-    # get a single channel
+    # Get a single channel (files assumed to have identical or near-identical channels)
     sample = channel_counter(samples, filename)
     
-    # run detection pipeline
-    type = 2
-    detector = CrossbillDetector(sample_rate, listener, type)
+    # Run detection pipeline
+    if settings:
+        detector = OpenDetector(sample_rate, listener, settings)
+    else:
+        type = 2
+        detector = CrossbillDetector(sample_rate, listener, type)
+        
     detector.detect(sample)
     detector.complete_detection()
 
-    # find average length of clips
+    # Find average length of clips
     #average_length(listener.clips, sample_rate)
     
-    # make a "detections/" folder or similar if it doesn't already exist
-    dir_name = make_dir(repo_path+"/detections", 2)
-    print(dir_name)
+    # Make a "detections/" dir or similar if it doesn't already exist
+    if settings: preferred_name = repo_path+"/detections-"+settings.name
+    else: preferred_name = repo_path+"/detections"
+    # Option 2: add number to directory name if preferred dir already exists
+    dir_name = make_dir(preferred_name, 2) 
     
-    # create files in new folder and return lengths of files in samples
+    # Create files in new directory and return lengths of files in samples
     lengths = detections_to_files(samples, listener.clips, sample_rate, dir_name)
     
     #  some final information
