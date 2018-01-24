@@ -1,7 +1,7 @@
 '''
-quality_control.py
+spectrogram_utils.py
 
-A GUI for performing quality control on audio files.
+Utilities for creating and exporting spectrograms.
 '''
 
 # For creating a spectrogram
@@ -11,28 +11,21 @@ from audio_file_utils import read_wave_file
 
 # For finding filename within path
 from ntpath import basename 
-
-# For GUI (?)
-
     
-def main():
+def main(clip_path):
+   
+   # Example clip
+    clip_path = "C:/Users/tessa/drive/red-crossbills/crossbill-detect/detections/smaller_sample_2936ms.wav"
     
-    # make "accepted" folder
-    # make "rejected" folder
-    # open up a window
-    # for all files in folder:
-    #   show spectrogram
-    #   yes or no?
-    #       if yes,
-    #           move file and spectrogram to new folder
-    #       if no,
-    filename = "C:/Users/tessa/drive/red-crossbills/crossbill-detect/detections/clip2936.wav"
-    # Generate image
-    save_spectrogram(filename, 'C:/Users/tessa/drive/red-crossbills/crossbill-detect/')
-    #test_spec_settings(filename)
-    # Handle user responses: Is it a crossbill? What type? Multiple calls?
+    # Generate spectrogram
+    figure, axes = make_spectrogram(clip_path)
+    
+    # Save spectrogram
+    destination = 'C:/Users/tessa/drive/red-crossbills/crossbill-detect/'
+    save_spectrogram(clip_path, destination, figure)
+    
 
-def save_spectrogram(origin_file, destination_path):
+def make_spectrogram(origin_file):
     '''Generates a spectrogram from filename (a .wav file) and saves it 
     to a .png file in destination_path. Spectrogram has no whitespace.'''
     
@@ -52,17 +45,23 @@ def save_spectrogram(origin_file, destination_path):
     
     plt.gca().set_ylim([0, 2000])
     
-    # Create descriptive filename
-    wav_filename = basename(origin_file)
-    filename = wav_filename.replace('.wav','')
-    name = destination_path+filename+".png"
-    
     # Remove axis ticks/labels and remove whitespace
     fig.subplots_adjust(left=0, right=1, bottom=0, top=1)   
     
-    plt.savefig(name)
+    return fig, ax 
     
-
+def save_spectrogram(origin_file, destination_path, fig):
+    '''Saves a spectrogram with a similar name as its origin file
+    e.g. if the origin path is: data/clip3320.wav
+            the spectrogram path is: destination_path/clip3320.png)
+            '''
+    
+    # Create descriptive filename & append desired path
+    filename = basename(origin_file).replace('.wav', '')
+    file_path = destination_path+filename+".png"
+    
+    # Save fig to specified path
+    fig.savefig(file_path)
     
 def test_spec_settings(filename):
     '''
@@ -110,4 +109,4 @@ def test_spec_settings(filename):
     plt.show()
 
     
-main()
+main(None)
