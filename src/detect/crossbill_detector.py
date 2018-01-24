@@ -37,7 +37,7 @@ class _Listener:
     def __init__(self):
         self.clips = []
         
-    def process_clip(self, start_index, length):
+    def append_clip(self, start_index, length):
         '''Called for every clip found by Old Bird detector'''
         self.clips.append((start_index, length))
 

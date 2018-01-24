@@ -152,8 +152,8 @@ class _Detector:
     called repeatedly with consecutive sample arrays. The `complete_detection`
     method should be called after the final call to the `detect` method.
     During detection, each time the detector detects a clip it notifies
-    a listener by invoking the listener's `process_clip` method. The
-    `process_clip` method must accept two arguments, the start index and
+    a listener by invoking the listener's `append_clip` method. The
+    `append_clip` method must accept two arguments, the start index and
     length of the detected clip.
     
     See the `_TSEEP_SETTINGS` and `_THRUSH_SETTINGS` objects above for
@@ -365,7 +365,8 @@ class _Detector:
 #                 length, str(start_time), duration, str(end_time))
 #             self._lines.append((start_index, s))
 
-            self._listener.process_clip(start_index, length)
+            #RECR: change name of "process_clip" function to "append_clip"
+            self._listener.append_clip(start_index, length)
             
             
     def complete_detection(self):
