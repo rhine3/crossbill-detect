@@ -37,7 +37,7 @@ class _Listener:
     def __init__(self):
         self.clips = []
         
-    def append_clip(self, start_index, length):
+    def append_detection(self, start_index, length):
         '''Called for every clip found by Old Bird detector'''
         self.clips.append((start_index, length))
 
@@ -102,7 +102,7 @@ def detections_to_files(samples, detections, sample_rate, dir_name, recording_na
     
     - samples: a single-channel numpy array of samples
     - detections: a list of tuples (detection_start_time, detection_length) 
-      created by _Listener's method, process_clip
+      created by _Listener's method, append_detection
     - sample_rate: integer sample rate
     '''
     
