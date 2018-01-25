@@ -172,38 +172,6 @@ def make_dir(dir_name, mode):
         makedirs(dir_name)
     
     return dir_name
-    
-def settings_testing(filename):
-    '''
-    For trying a whole bunch of different settings. Creates several settings "Bunches"
-    to be used by function detect_from_file_test
-    '''
-    
-    settings_group = []
-    f0_settings = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600]
-    OLD_FS = 22050
-    
-    for i in range(10):
-        generated_settings = Bunch(
-            name = 'settings' + str(i),
-            filter_f0 = f0_settings[i],         # hertz #RECR modification
-            filter_f1=4400,                     # hertz #RECR modification
-            filter_bw=100,                      # hertz
-            filter_duration=100 / OLD_FS,      # seconds
-            integration_time=4000 / OLD_FS,    # seconds
-            ratio_delay=.02,                    # seconds
-            ratio_threshold=1.3,                # dimensionless
-            min_duration=.030,                  # seconds #RECR modification
-            max_duration=.050,                  # seconds #RECR modification
-            initial_padding=1000 / OLD_FS,     # seconds #RECR modification
-            suppressor_count_threshold=10,      # clips
-            suppressor_period=20                # seconds
-        )
-        settings_group.append(generated_settings)
-    
-    for settings in settings_group:
-        detect_from_file_test(filename, settings)
-
 
 def detect_from_file(file_path, settings = None):
     '''
@@ -262,8 +230,6 @@ def main():
     # if a file was provided, detect calls within it
     if input['file']:
         detect_from_file(input['file'])
-        # TEST:
-        #settings_testing(input['file'])
         return
     
     # if a directory was provided, detect calls within all files in directory
