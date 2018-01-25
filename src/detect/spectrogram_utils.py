@@ -13,7 +13,7 @@ from audio_file_utils import read_wave_file
 # For finding filename within path
 from ntpath import basename 
     
-def main(clip_path):
+def example():
    
    # Example clip
     clip_path = "C:/Users/tessa/drive/red-crossbills/crossbill-detect/detections/smaller_sample_2936ms.wav"
@@ -24,6 +24,7 @@ def main(clip_path):
     # Save spectrogram
     destination = 'C:/Users/tessa/drive/red-crossbills/crossbill-detect/'
     save_spectrogram(clip_path, destination, figure)
+    
     
 
 def make_spectrogram(origin_file):
@@ -63,6 +64,7 @@ def save_spectrogram(origin_file, destination_path, fig):
     # Save fig to specified path
     fig.savefig(file_path)
     
+    
 def test_spec_settings(filename):
     '''
     filename: path to a .wav file
@@ -72,10 +74,11 @@ def test_spec_settings(filename):
     
     Best settings seem to be (NFFT, pad_to) = (450, 512)
     '''
-    # read wave file
+    # Read wave file
     (samples, sample_rate) = read_wave_file(filename)
     samples = samples[0]
     
+    # Parameters to test
     block_sizes = [400, 450, 512, 600]
     paddings = [400, 512, 600, 1024]
     
@@ -107,6 +110,3 @@ def test_spec_settings(filename):
             subplot_num += 1
    
     plt.show()
-
-    
-main(None)
