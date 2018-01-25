@@ -206,7 +206,7 @@ def detect_from_file(filename, settings = None):
     # This function will be notified by the detector
     listener = _Listener()
     
-    # Get a single channel (files assumed to have identical or near-identical channels)
+    # Get a single channel in the form of a 1D nparray (as required by detector)
     sample = channel_counter(samples, filename)
     
     # Run detection pipeline
