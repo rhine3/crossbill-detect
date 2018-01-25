@@ -9,7 +9,7 @@ $ python crossbill_detector.py -f <filename.wav>
 $ python crossbill_detector.py -d <directory-of-wav-files/>
 '''
 
-# Harold Mills's utilities (CrossbillDetector and OpenDetector are my modifications)
+# Harold Mills's utilities (my modifications: CrossbillDetector & OpenDetector)
 from old_bird_detector_redux_1_1 import CrossbillDetector, OpenDetector
 from audio_file_utils import read_wave_file, write_wave_file
 from bunch import Bunch 
@@ -33,39 +33,117 @@ repo_path = 'C:/Users/tessa/drive/red-crossbills/crossbill-detect'
 
 
 class _Listener:
+    '''A listener that interacts with the Old Bird Detector Redux (OBDR).
+    Various utilities include:
+        - extract_single_channel(): put samples in correct format for the OBDR
+        - append_detection(): called for every detection found by the OBDR
+        - detections_to_files(): save all detections as .wav files
+        - average_length: calculate average length of detections
+    '''
     
-    def __init__(self):
-        self.clips = []
-        
+    def __init__(self, source_file, samples, sample_rate):
+        self.sample_rate = sample_rate
+        self.samples = self.extract_single_channel(source_file, samples)
+        self.detections = [] #to be filled in by append_detections()
+      
+      
     def append_detection(self, start_index, length):
         '''Called for every clip found by Old Bird detector'''
-        self.clips.append((start_index, length))
+        self.detections.append((start_index, length))
+     
+     
+    def extract_single_channel(self, source_path, samples):
+        '''
+        Returns the first subarray from `samples`, a two-dimensional array of 
+        channels of sound read from a .wav file. The array returned is in the 
+        format required by the OBDR.
+        '''
+        
+        filename = basename(source_path)
+        
+        if len(samples) > 1:
+            if len(samples) == 2: 
+                if samples[0].all() == samples[1].all():
+                    warn_str = "File '{}' contains two identical channels as read".format(filename)
+              
+                else:
+                    warn_str = "File '{}' contains two non-identical channels as read".format(filename)
+            else:
+                warn_str = "Multiple channels in file '{}' as read".format(filename)
+            
+            logging.warning(warn_str)
+            logging.info("Processing first channel")
+            return samples[0]
+            
+        elif len(samples) == 1:
+            logging.info("Processing single channel in file '{}'".format(filename))
+            return samples[0]
+            
+        else:
+            logging.info("File {} is empty".format(filename))
+            return []
+    
 
-def average_length(detections, sample_rate):
-    '''
-    Find average sample length
-    '''
-    # compute average length in number of samples--only non-outliers (<0.05)
-    num_detections = 0
-    sample_total = 0
+    def detections_to_files(self, dir_name, recording_name):
+        '''
+        Uses write_wave_file() from Vesper's audio_file_utils to write a mono
+        audio file given their start time and length in samples.
+        '''
+        
+        lengths = []
+        logging.info("Saving files from {}.wav".format(recording_name))
+        
+        # write detections to `dir_name/`
+        for detection in self.detections:
+            (start, length) = detection
+            
+            lengths.append(length)
+            
+            # issue: why are so many of the correct detections 4205 samples long
+            #if length != 4205:
+            #   logging.info(length)
+            #   continue
+            
+            # create filename indicating detection origin and start in ms
+            start_sec = int(1000 * start/self.sample_rate)
+            filename = "{}/{}_{}ms.wav".format(dir_name, 
+                       recording_name, start_sec)
+            
+            # create numpy array of detections (mono file)
+            clip = numpy.array([self.samples[start:start+length], self.samples[start:start+length]], numpy.int32)
+            
+            # warning: will overwrite any clips that already exist
+            write_wave_file(filename, clip, self.sample_rate)
+            logging.info("{} saved".format(filename))
+            
+        return lengths
+     
     
-    # calculate upper limit of number of samples--higher than 0.15 sec implies detection outlier
-    upper_limit = 0.15 * sample_rate
-    #logging.info(upper_limit)
+    def average_length(self):
+        '''
+        Compute average length in number of samples--only non-outliers (<0.05)
+        '''
+        
+        num_detections = 0
+        sample_total = 0
+        
+        # calculate upper limit of number of samples--higher than 0.15 sec implies detection outlier
+        upper_limit = 0.15 * self.sample_rate
+        #logging.info(upper_limit)
+        
+        for detection in self.detections:
+            detection_length = detection[1]
+            if detection_length < upper_limit:
+                logging.info("Detection exceeds determined sample limit \
+                             ({} samples)".format(detection_length))
+                num_detections += 1
+                sample_total += detection_length
+        
+        avg_samples = sample_total / num_detections
+        logging.info(avg_samples)
+        logging.info(avg_samples*sample_rate)
     
-    for detection in detections:
-        detection_length = detection[1]
-        #logging.info(detection_length)
-        if detection_length < upper_limit:
-            #logging.info("detection exceeds determined sample limit")
-            num_detections += 1
-            sample_total += detection_length
-    
-    avg_samples = sample_total / num_detections
-    #logging.info(avg_samples)
-    #logging.info(avg_samples*sample_rate)
-    
-    
+
 def make_dir(dir_name, mode):
     ''' 
     Creates a directory if it doesn't already exist. 
@@ -94,68 +172,6 @@ def make_dir(dir_name, mode):
         makedirs(dir_name)
     
     return dir_name
-    
-def detections_to_files(samples, detections, sample_rate, dir_name, recording_name):
-    '''
-    Uses write_wave_file() from Vesper's audio_file_utils to write audio files given 
-    their start time and length in samples.
-    
-    - samples: a single-channel numpy array of samples
-    - detections: a list of tuples (detection_start_time, detection_length) 
-      created by _Listener's method, append_detection
-    - sample_rate: integer sample rate
-    '''
-    
-    lengths = []
-    logging.info("Saving files from {}.wav".format(recording_name))
-    
-    # write clips to `dir_name/`
-    for detection in detections:
-        (start, length) = detection
-        
-        lengths.append(length)
-        
-        # issue: why are so many of the correct detections 4205 samples long?
-        #if length != 4205:
-        #   logging.info(length)
-        #   continue
-        
-        # create filename indicating clip origin and start in milliseconds
-        start_sec = int(1000 * start/sample_rate)
-        filename = "{}/{}_{}ms.wav".format(dir_name, recording_name, start_sec)
-        
-        # create 2D numpy array of detections
-        clip = numpy.array([samples[0][start:start+length], samples[1][start:start+length]], numpy.int32)
-        
-        # warning: will overwrite any clips that already exist
-        write_wave_file(filename, clip, sample_rate)
-        logging.info("{} saved".format(filename))
-        
-    return lengths
-    
-def channel_counter(samples, filename):
-    '''
-    Returns the first subarray from `samples`, a two-dimensional array of channels of sound
-    read from a .wav file.
-    
-    Prints different messages depending on how many subarrays are present, and 
-    whether the subarrays are identical.
-    '''
-    if len(samples) > 1:
-        if len(samples) == 2: 
-            if samples[0].all() == samples[1].all():
-                logging.warning("File '{}' contains two identical channels as read".format(filename))
-            else:
-                logging.warning("File '{}' contains two non-identical channels as read".format(filename))
-        else:
-            logging.warning("Multiple channels in file '{}' as read".format(filename))
-        logging.info("Processing first channel")
-        return samples[0]
-    elif len(samples) == 1:
-        logging.info("Processing single channel in file '{}'".format(filename))
-        return samples[0]
-    else:
-        return []
     
 def settings_testing(filename):
     '''
@@ -189,7 +205,7 @@ def settings_testing(filename):
         detect_from_file_test(filename, settings)
 
 
-def detect_from_file(filename, settings = None):
+def detect_from_file(file_path, settings = None):
     '''
     
     Creates a detector object to detect crossbill calls of a desired type. 
@@ -201,13 +217,10 @@ def detect_from_file(filename, settings = None):
     
     # Generate a two-dimensional numpy array frome wave file
     # nparray is of shape (num_channels, num_samples)
-    (samples, sample_rate) = read_wave_file(filename)
+    (samples, sample_rate) = read_wave_file(file_path)
     
     # This function will be notified by the detector
-    listener = _Listener()
-    
-    # Get a single channel in the form of a 1D nparray (as required by detector)
-    sample = channel_counter(samples, filename)
+    listener = _Listener(file_path, samples, sample_rate)
     
     # Run detection pipeline
     if settings:
@@ -216,7 +229,7 @@ def detect_from_file(filename, settings = None):
         type = 2
         detector = CrossbillDetector(sample_rate, listener, type)
         
-    detector.detect(sample)
+    detector.detect(listener.samples)
     detector.complete_detection()
 
     # Find average length of clips
@@ -229,12 +242,8 @@ def detect_from_file(filename, settings = None):
     dir_name = make_dir(preferred_name, 2) 
     
     # Create files in new directory and return lengths of files in samples
-    recording_name = basename(filename).replace('.wav','')
-    lengths = detections_to_files(samples, 
-        listener.clips, 
-        sample_rate, 
-        dir_name, 
-        recording_name)
+    recording_name = basename(file_path).replace('.wav','')
+    lengths = listener.detections_to_files(dir_name, recording_name)
     
     #  some final information
     #frequency_bar_plotter(lengths)
