@@ -1,8 +1,8 @@
 '''
-spectrogram_utils.py
+spectrogram_utils_pyplot.py
 by Tessa Rhinehart
 
-Utilities for creating and exporting spectrograms.
+Utilities for creating, exporting, and viewing spectrograms using pyplot.
 '''
 
 # For creating a spectrogram
@@ -19,15 +19,15 @@ def example():
     clip_path = "C:/Users/tessa/drive/red-crossbills/crossbill-detect/detections/smaller_sample_2936ms.wav"
     
     # Generate spectrogram
-    figure, axes = make_spectrogram(clip_path)
+    figure, axes = make_speck(clip_path)
     
     # Save spectrogram
     destination = 'C:/Users/tessa/drive/red-crossbills/crossbill-detect/'
-    save_spectrogram(clip_path, destination, figure)
+    save_speck(clip_path, destination, figure)
     
     
 
-def make_spectrogram(origin_file):
+def make_speck(origin_file):
     '''Generates a spectrogram from filename (a .wav file) and saves it 
     to a .png file in destination_path. Spectrogram has no whitespace.'''
     
@@ -52,7 +52,7 @@ def make_spectrogram(origin_file):
     
     return fig, ax 
     
-def save_spectrogram(origin_file, destination_path, fig):
+def save_speck(origin_file, destination_path, fig):
     '''Saves a spectrogram with a similar name as its origin file
     e.g. if the origin path is: data/clip3320.wav
     the spectrogram path is: destination_path/clip3320.png)'''
