@@ -31,10 +31,10 @@ import logging
 
 repo_path = 'C:/Users/tessa/drive/red-crossbills/crossbill-detect'
 
-
+### Class for direct interaction with detector objects
 class _Listener:
     '''A listener that interacts with the Old Bird Detector Redux (OBDR).
-    Various utilities include:
+    Methods include:
         - extract_single_channel(): put samples in correct format for the OBDR
         - append_detection(): called for every detection found by the OBDR
         - detections_to_files(): save all detections as .wav files
@@ -143,6 +143,8 @@ class _Listener:
         logging.info(avg_samples)
         logging.info(avg_samples*sample_rate)
     
+    
+### Miscellaneous and wrapper functions
 
 def make_dir(dir_name, mode):
     ''' 
@@ -213,13 +215,13 @@ def detect_from_file(file_path, settings = None):
     recording_name = basename(file_path).replace('.wav','')
     lengths = listener.detections_to_files(dir_name, recording_name)
     
-    #  some final information
+    #  Print final information
     #frequency_bar_plotter(lengths)
     print("Files saved in '{}/'".format(dir_name))
 
 
 def main():
-    # get file or folder as user input 
+    # Get file or folder as user input 
     input = input_validation() # function from parser.py
    
     if input['verbose']:
@@ -227,17 +229,18 @@ def main():
     else:
         logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.WARNING)
     
-    # if a file was provided, detect calls within it
+    # If user provided a file, detect calls within it
     if input['file']:
         detect_from_file(input['file'])
         return
     
-    # if a directory was provided, detect calls within all files in directory
+    # If user provided a directory, detect calls within all files in directory
     elif input['dir']:
         directory = input['dir']
         
-        # run detector on every file ending with .wav in directory
+        # Run detector on every file ending with .wav in directory
         for filename in listdir(directory):
+        
             file_path = directory + filename
             if is_wav_file(file_path): # function from parser.py
                 detect_from_file(file_path)
