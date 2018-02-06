@@ -19,7 +19,7 @@ if sys.version_info[0] < 3:
 else:
     import tkinter as Tk
 
-    
+### Scripts ###    
 def interface():
     root = Tk.Tk()
     root.wm_title("Embedding in TK")
@@ -30,24 +30,25 @@ def interface():
     # In the figure, create and return an Axes at index 1 of a 1x1 grid
     ax = fig.add_subplot(111)
 
-    # Example clip
-    #clip_path = "C:/Users/tessa/drive/red-crossbills/crossbill-detect/detections/smaller_sample_2936ms.wav"
-    #fig = make_spectrogram(clip_path, fig, ax)
+    # Make example figure
+    clip_path = "C:/Users/tessa/drive/red-crossbills/crossbill-detect/detections/smaller_sample_2936ms.wav"
+    fig = make_spectrogram(clip_path, fig, ax)
 
     # Create a tk.DrawingArea
     canvas = FigureCanvasTkAgg(fig, master=root)
     canvas.show()
     canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
-
-    toolbar = NavigationToolbar2TkAgg(canvas, root)
-    toolbar.update()
     canvas._tkcanvas.pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
+
+    # Add toolbar
+    #toolbar = NavigationToolbar2TkAgg(canvas, root)
+    #toolbar.update()
     
-    # For key press functionality
+    # Implement key press functionality
     canvas.mpl_connect('key_press_event', 
         lambda event: on_key_event(event, canvas, toolbar))
     
-    # For quit button functionality
+    # Implement quit button functionality
     button = Tk.Button(master=root, text='Quit', 
         command=lambda: _quit(root))
     button.pack(side=Tk.BOTTOM)
@@ -59,7 +60,9 @@ def interface():
 
 def on_key_event(event, canvas, toolbar):
     print('you pressed %s' % event.key)
-    key_press_handler(event, canvas, toolbar)
+    
+    # Implement default bindings (e.g. s = save)
+    #key_press_handler(event, canvas, toolbar)
 
 
 
