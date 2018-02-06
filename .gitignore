@@ -1,2 +1,2 @@
-# Python compiler files
+# Ignore Python compiler files
 __pycache__/
