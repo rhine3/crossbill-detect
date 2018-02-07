@@ -2,14 +2,18 @@
 application.py
 by Tessa Rhinehart
 
-A GUI for inspecting spectrograms.
+A Python3 GUI for inspecting spectrograms
 '''
 
 import matplotlib
 matplotlib.use('TkAgg')
 
 ### Imports ###
-# For plotting MPL figures with tkinter
+# GUI: TkInterface
+import tkinter as Tk
+import tkinter.filedialog as fd
+
+# Plotting MPL figures with tkinter
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 
@@ -23,23 +27,14 @@ from spectrogram_utils import make_spectrogram, save_spectrogram
 from os import listdir
 from os.path import splitext
 
-import time
-
-# Correct version of Tkinter & modules depending on Python version
-import sys
-if sys.version_info[0] < 3:
-    import Tkinter as Tk
-    import Tkinter.filedialog as fd
-else:
-    import tkinter as Tk
-    import tkinter.filedialog as fd
     
-### Class ###
+### Classes ###
 class Application:
 
     def __init__(self, master=None):
         self.master = master
         self.position = 0
+        self.files = []
         
         # Create self.frame with buttons
         self.frame = Tk.Frame()
@@ -49,6 +44,7 @@ class Application:
         self.create_canvas()
         self.canvas.mpl_connect('key_press_event',
             lambda event: self.on_key_event(event, self.canvas))
+        self.draw_example_fig()
         
     
     def create_buttons(self):        
@@ -59,13 +55,17 @@ class Application:
             command=self.draw_example_fig)
         examplebutton.pack(side='left')
         
-        filebutton = Tk.Button(self.frame, text="Browse Files",
+        filebutton = Tk.Button(self.frame, text="Open File",
             command=self.load_file)
         filebutton.pack(side='left')
         
-        folderbutton = Tk.Button(self.frame, text="Browse Folders", 
+        folderbutton = Tk.Button(self.frame, text="Open Folder", 
             command=self.load_folder)
         folderbutton.pack(side='left')
+        
+        settingsbutton = Tk.Button(self.frame, text="Settings",
+            command=self.set_settings)
+        settingsbutton.pack(side='left')
         
         self.frame.pack() # make Frame visible
     
@@ -87,7 +87,7 @@ class Application:
         self.fig = make_spectrogram(path, self.fig, self.ax)
         self.fig.canvas.draw()
         
-    def draw_fig(self, path):
+    def draw_speck(self, path):
         '''Draw the spectrogram of the wav file at path'''
         self.fig.clear()
         self.ax = self.fig.add_subplot(111)
@@ -99,10 +99,10 @@ class Application:
         filename = fd.askopenfilename(filetypes=(("WAV files","*.wav"),
             ("all files","*.*")))
         # assert 16 bit, handle "cancel," etc.
-        self.draw_fig(filename)
+        self.draw_speck(filename)
         
     def load_folder(self):
-        '''Open dialog to load & view folder'''
+        '''Open dialog to load & view folder, and display first image'''
         dirname = fd.askdirectory()
         self.position = 0
         self.files = []
@@ -114,11 +114,24 @@ class Application:
         for path in directory_list:
             name, ext = splitext(path)
             if ext == '.wav': self.files.append(dirname+'/'+path) 
-    
-        for file in self.files:
-            time.sleep(.5)
-            self.draw_fig(file)
         
+        # Draw spectrogram from 
+        self.draw_speck(self.files[0])
+        
+    def load_next_file(self):
+        '''Increments position and moves to next file in self.files'''
+        self.position += 1
+        if self.position < len(self.files):
+            filename = self.files[self.position]
+            print("Loading {}".format(filename))
+            self.draw_speck(filename)
+        else:
+            print("No more files to load")
+    
+    def set_settings(self):
+        print("Nice!")
+        return
+    
     def next_file(self):
         # need to implement
         self.position += 1
@@ -127,9 +140,10 @@ class Application:
         '''Handles keypresses:
         n - display next spectrogram in folder
         1, 2, ... - move to correct folder and display next spectrogram'''
-        # need to implement
+        self.frame.focus_set()
+        self.frame.bind("<n>", lambda event: self.load_next_file())
+        self.frame.bind("<q>", lambda event: self.frame.quit())
         return
-    
     
 ### Scripts ###   
 def main():
