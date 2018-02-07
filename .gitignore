@@ -1,2 +1,6 @@
-# Ignore Python compiler files
+# Python compiler files
 __pycache__/
+
+# Private audio files
+detections/
+wav-files/
