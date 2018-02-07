@@ -15,24 +15,27 @@ from ntpath import basename
 from audio_file_utils import read_wave_file
 
 ### Scripts ###
-def make_spectrogram(origin_file, figure, axes, freq=20000, points=450, pad=512):
+def make_spectrogram(origin_file, figure, axes, points=512, pad=75):
     '''Updates the data of a given axis with a spectrogram 
     generated from origin_file'''
 
     # Read wave file
+    
     (samples, sample_rate) = read_wave_file(origin_file)
     samples = samples[0]
+    
 
     spectrum, freqs, t, im = axes.specgram(
         samples,
-        Fs = freq,
+        Fs = 96000,
         NFFT = points, # window size
-        pad_to = pad,
+        noverlap = .75*points,
+        pad_to = 1024,
         cmap = 'gray_r', # gray color map
     )
 
     # View frequencies between 0 and 10 kHz
-    axes.set_ylim(0, 2000)    
+    axes.set_ylim(0, 10000)    
 
     # Remove axis ticks/labels and remove whitespace
     figure.subplots_adjust(left=0, right=1, bottom=0, top=1)   
